@@ -60,14 +60,4 @@ public class Vector2D {
             this.y = length * Math.sin(angel);
         }
     }
-
-    public static void main(String[] args) {
-        Vector2D v1 = new Vector2D(2,2);
-        System.out.println(v1.getLength());
-        System.out.println(v1.getAngle());
-        v1.setLength(5);
-        System.out.println(v1.getLength());
-        v1.setAngel(Math.PI/6);
-        System.out.println(v1.getAngle());
-    }
 }

@@ -3,29 +3,29 @@ import tklibs.SpriteUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
 
     BufferedImage playerImage;
-    int playerX;
-    int playerY;
+    Vector2D playerPosition;
 
     BufferedImage backgroundImage;
-    int backgroundX;
-    int backgroundY;
+    Vector2D backgroundPosition;
 
-    private final int END_LEFT = 740;
-    private final int END_RIGHT = 350;
-    private final int END_TOP = 0;
-    private final int END_BOTTOM = 520;
+    BufferedImage bulletImage;
+    ArrayList<Vector2D> bulletPositions;
+
 
     public GamePanel() {
         playerImage = SpriteUtils.loadImage("assets/images/players/straight/0.png");
+        playerPosition = new Vector2D(100, 320);
+
         backgroundImage = SpriteUtils.loadImage("assets/images/background/0.png");
-        playerX = 100;
-        playerY = 100;
-        backgroundX = 0;
-        backgroundY = 600 - backgroundImage.getHeight();
+        backgroundPosition = new Vector2D(0, 600 - backgroundImage.getHeight());
+
+        bulletImage = SpriteUtils.loadImage("assets/images/player-bullets/a/1.png");
+        bulletPositions = new ArrayList<>();
 
     }
 
@@ -48,41 +48,73 @@ public class GamePanel extends JPanel {
 
     @Override
     public void paint(Graphics g) {
-        g.drawImage(backgroundImage, backgroundX, backgroundY, null);
-        g.drawImage(playerImage, playerX, playerY, null);
+        g.drawImage(backgroundImage, (int) backgroundPosition.x, (int) backgroundPosition.y, null);
+
+        g.drawImage(playerImage, (int) playerPosition.x, (int) playerPosition.y, null);
+
+        for (int i = 0; i < bulletPositions.size() ; i++) {
+            Vector2D bulletPosition = bulletPositions.get(i);
+            g.drawImage(bulletImage, (int) bulletPosition.x, (int) bulletPosition.y, null);
+        }
     }
 
     private void runAll() {
-        backgroundY += 5;
-        if (backgroundY > 0) {
-            backgroundY = 0;
+        backgroudMove();
+        playerMove();
+        playerLimited();
+        bulletsRun();
+
+    }
+
+    private void bulletsRun() {
+        for (int i = 0; i < bulletPositions.size() ; i++) {
+            Vector2D bulletPosition = bulletPositions.get(i);
+            bulletPosition.add(0, -1);
         }
-        //player move
+    }
+
+    private void playerLimited() {
+        //player limited position
+        if (playerPosition.x > backgroundImage.getWidth() - playerImage.getWidth()) {
+            playerPosition.set(backgroundImage.getWidth() - playerImage.getWidth(), playerPosition.y);
+        }
+        if (playerPosition.y < 0) {
+            playerPosition.set(playerPosition.x, 0);
+        }
+        if (playerPosition.y > 600 - playerImage.getHeight()) {
+            playerPosition.set(playerPosition.x, 600 - playerImage.getHeight());
+        }
+    }
+
+    private void playerMove() {
         int playerSpeed = 5;
+        int bulletSpeed = 5;
+        int vx = 0;
+        int vy = 0;
         if (GameWindow.isUpPress) {
-            playerY -= playerSpeed;
+            vy -= playerSpeed;
         }
         if (GameWindow.isDownPress) {
-            playerY += playerSpeed;
+            vy += playerSpeed;
         }
         if (GameWindow.isRightPress) {
-            playerX -= playerSpeed;
+            vx -= playerSpeed;
         }
         if (GameWindow.isLeftPress) {
-            playerX += playerSpeed;
+            vx += playerSpeed;
         }
-        if (playerX < 0) {
-            playerX = 0;
+        playerPosition.add(vx, vy);
+
+        if (playerPosition.x < 0) {
+            playerPosition.x = 0;
         }
-        //player limited position
-        if(playerX > backgroundImage.getWidth() - playerImage.getWidth()){
-            playerX = backgroundImage.getWidth() - playerImage.getWidth();
-        }
-        if(playerY < 0){
-            playerY = 0;
-        }
-        if(playerY > 600 - playerImage.getHeight()){
-            playerY = 600 - playerImage.getHeight();
+
+    }
+
+    private void backgroudMove() {
+        backgroundPosition.add(0, 5);
+        if (backgroundPosition.y > 0) {
+            backgroundPosition.set(backgroundPosition.x, 0);
         }
     }
 }
