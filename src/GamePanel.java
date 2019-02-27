@@ -14,17 +14,17 @@ public class GamePanel extends JPanel {
     int backgroundX;
     int backgroundY;
 
-    private final int END_LEFT = 384;
-    private final int END_RIGHT = 740;
+    private final int END_LEFT = 740;
+    private final int END_RIGHT = 350;
     private final int END_TOP = 0;
     private final int END_BOTTOM = 520;
 
     public GamePanel() {
         playerImage = SpriteUtils.loadImage("assets/images/players/straight/0.png");
         backgroundImage = SpriteUtils.loadImage("assets/images/background/0.png");
-        playerX = 400;
+        playerX = 100;
         playerY = 100;
-        backgroundX = backgroundImage.getWidth();
+        backgroundX = 0;
         backgroundY = 600 - backgroundImage.getHeight();
 
     }
@@ -53,22 +53,36 @@ public class GamePanel extends JPanel {
     }
 
     private void runAll() {
-        backgroundY += 10;
+        backgroundY += 5;
         if (backgroundY > 0) {
             backgroundY = 0;
         }
-        if (GameWindow.isUpPress && playerY > END_TOP) {
-            playerY -= 3;
+        //player move
+        int playerSpeed = 5;
+        if (GameWindow.isUpPress) {
+            playerY -= playerSpeed;
         }
-        if (GameWindow.isDownPress && playerY < END_BOTTOM) {
-            playerY += 3;
-
+        if (GameWindow.isDownPress) {
+            playerY += playerSpeed;
         }
-        if (GameWindow.isRightPress && playerX > END_LEFT) {
-            playerX -= 3;
+        if (GameWindow.isRightPress) {
+            playerX -= playerSpeed;
         }
-        if (GameWindow.isLeftPress && playerX < END_RIGHT) {
-            playerX += 3;
+        if (GameWindow.isLeftPress) {
+            playerX += playerSpeed;
+        }
+        if (playerX < 0) {
+            playerX = 0;
+        }
+        //player limited position
+        if(playerX > backgroundImage.getWidth() - playerImage.getWidth()){
+            playerX = backgroundImage.getWidth() - playerImage.getWidth();
+        }
+        if(playerY < 0){
+            playerY = 0;
+        }
+        if(playerY > 600 - playerImage.getHeight()){
+            playerY = 600 - playerImage.getHeight();
         }
     }
 }
