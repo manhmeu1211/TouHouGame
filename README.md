@@ -1,1 +1,1 @@
-# CI Sample Starter
+# Test JAVA game
