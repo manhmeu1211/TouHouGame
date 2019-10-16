@@ -2,89 +2,94 @@ package game.player;
 
 import game.GameObject;
 import game.GameWindow;
-import game.Settings;
+import game.Setting;
+import game.physics.BoxCollider;
 import game.renderer.Renderer;
-import tklibs.SpriteUtils;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
 public class Player extends GameObject {
 
-    public Player() {
-//        BufferedImage image = SpriteUtils.loadImage("assets/images/players/straight/0.png");
-////        renderer = new Renderer(image);
+    int hp;
+
+    public Player(){
         renderer = new Renderer("assets/images/players/straight");
         position.set(300, 500);
+        hitBox = new BoxCollider(this,32,48);
+        hp = 20;
     }
 
+    static Font font = new Font("Verdana", Font.BOLD, 22);
     @Override
     public void render(Graphics g) {
         super.render(g);
+        g.setFont(font);
+        g.setColor(Color.CYAN);
+        g.drawString(hp + "", (int) position.x, (int) position.y);
+    }
+
+    // limit of player's motion
+    private void limit() {
+        if(position.y - anchor.y * Setting.PLAYER_HEIGHT < 0) position.y = anchor.y * Setting.PLAYER_HEIGHT;
+        if(position.y - anchor.y * Setting.PLAYER_HEIGHT >= Setting.GAME_HEIGHT - Setting.PLAYER_HEIGHT){
+            position.y = Setting.GAME_HEIGHT - Setting.PLAYER_HEIGHT + anchor.y * Setting.PLAYER_HEIGHT;
+        }
+        if(position.x - anchor.x * Setting.PLAYER_WIDTH >= Setting.BACKGROUND_WIDTH - Setting.PLAYER_WIDTH){
+            position.x = Setting.BACKGROUND_WIDTH - Setting.PLAYER_WIDTH + anchor.x * Setting.PLAYER_WIDTH;
+        }
+        if(position.x - anchor.x * Setting.PLAYER_WIDTH < 0) position.x = anchor.x * Setting.PLAYER_WIDTH;
+    }
+
+    // player's motion
+    private void move() {
+        int speed = 3;
+        int vx = 0, vy = 0;
+        if(GameWindow.isUpPress){
+            vy -= speed;
+        }
+        if(GameWindow.isDownPress){
+            vy += speed;
+        }
+        if(GameWindow.isRightPress){
+            vx += speed;
+        }
+        if(GameWindow.isLeftPress){
+            vx -= speed;
+        }
+        velocity.set(vx, vy);
+        velocity.setLength(speed);
+    }
+
+    // player fire
+    int fireCount = 0;
+    private void fire() {
+        fireCount++;
+        if(GameWindow.isFirePress && fireCount > 20){
+            for (int i = 0; i < 6; i++) {
+                PlayerBullet bullet = GameObject.recycle(PlayerBullet.class);
+                bullet.position.set(position.x, position.y);
+                bullet.velocity.setAngle(-Math.PI/3 - i * (Math.PI/15));
+            }
+            fireCount = 0;
+        }
+    }
+
+    public void takeDamage(int damage){
+        hp -= damage;
+        if(hp <= 0){
+            hp = 0;
+            PlayerExplosion pe = new PlayerExplosion();
+            pe.position.set(position.x, position.y);
+            this.deactive();
+        }
     }
 
     @Override
-    public void run() {
+    public void run(){
         super.run();
         move();
         limit();
         fire();
     }
 
-    // TODO: remove fireCount
-    int fireCount;
-    private void fire() {
-        fireCount++;
-        if(GameWindow.isFirePress && fireCount > 20) {
-            for (int i = 0; i < 6; i++) {
-//                PlayerBullet bullet = new PlayerBullet();
-                PlayerBullet bullet = GameObject.recycle(PlayerBullet.class);
-                bullet.position.set(position.x, position.y);
-                bullet.velocity.setAngle(-Math.PI / 3 - i * (Math.PI / 15));
-            }
-            fireCount = 0;
-        }
-    }
-
-    private void limit() {
-        if(position.x < 0) {
-            position.set(0, position.y);
-        }
-        if(position.x > Settings.BACKGROUND_WIDTH - Settings.PLAYER_WIDTH) {
-            position.set(
-                    Settings.BACKGROUND_WIDTH - Settings.PLAYER_WIDTH,
-                    position.y
-            );
-        }
-        if(position.y < 0) {
-            position.set(position.x, 0);
-        }
-        if(position.y > Settings.GAME_HEIGHT - Settings.PLAYER_HEIGHT) {
-            position.set(
-                    position.x,
-                    Settings.GAME_HEIGHT - Settings.PLAYER_HEIGHT
-            );
-        }
-    }
-
-    private void move() {
-        int playerSpeed = 3;
-        int vx = 0;
-        int vy = 0;
-        if(GameWindow.isUpPress) {
-            vy -= playerSpeed;
-        }
-        if(GameWindow.isDownPress) {
-            vy += playerSpeed;
-        }
-        if(GameWindow.isLeftPress) {
-            vx -= playerSpeed;
-        }
-        if(GameWindow.isRightPress) {
-            vx += playerSpeed;
-        }
-        velocity.set(vx, vy);
-        velocity.setLength(playerSpeed);
-    }
 }

@@ -5,83 +5,57 @@ import tklibs.SpriteUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.io.File;
 
 public class Renderer {
+
     BufferedImage image;
     ArrayList<BufferedImage> images;
     int currentIndex;
     int frameCount;
-    boolean isOnce; // = true
 
-    public Renderer(BufferedImage image) {
+    public Renderer(BufferedImage image){
         this.image = image;
         this.currentIndex = 0;
         this.frameCount = 0;
     }
 
-    // TODO: 1. upgrade order fileName
-    // TODO: 2. load image file .png only
-    public Renderer(String folderPath) { // animation
+    public Renderer(String folderPath){
         images = new ArrayList<>();
         File folder = new File(folderPath);
-        java.util.List<String> fileNames = Arrays.asList(folder.list());
-        fileNames.sort(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareTo(o2);
-            }
-        });
-        for(int i = 0; i < fileNames.size(); i++) {
-            String fileName = fileNames.get(i);
-            if(fileName.toLowerCase().endsWith(".png")) {
-                BufferedImage image = SpriteUtils.loadImage(
-                        folderPath + "/" + fileName
-                );
-                images.add(image);
-            }
+        String [] fileNames = folder.list();
+        for (int i = 0; i < fileNames.length; i++) {
+            String fileName = fileNames[i];
+            BufferedImage image = SpriteUtils.loadImage(folderPath + "/" + fileName);
+            images.add(image);
         }
     }
 
-    public Renderer(String folderPath, boolean isOnce) {
-        this(folderPath);
-        this.isOnce = isOnce;
-    }
-
     public void render(Graphics g, GameObject master){
-        // master > position
-        if(image != null) {
-            // render anh don
+        if(image != null){
             g.drawImage(
                     image,
                     (int) (master.position.x - master.anchor.x * image.getWidth()),
                     (int) (master.position.y - master.anchor.y * image.getHeight()),
-                    null
-            );
-        } else if(images != null) {
-            // render animation
+                    null);
+        }
+        else if(images != null){
             BufferedImage currentImage = images.get(currentIndex);
             g.drawImage(
                     currentImage,
                     (int) (master.position.x - master.anchor.x * currentImage.getWidth()),
                     (int) (master.position.y - master.anchor.y * currentImage.getHeight()),
-                    null
-            );
-
+                    null);
             frameCount++;
-            if(frameCount > 10) {
+            if (frameCount > 10){
                 currentIndex++;
-                if(currentIndex >= images.size()) {
-                    if(isOnce) {
-                        master.deactive();
-                    }
+                if(currentIndex >= images.size()){
                     currentIndex = 0;
                 }
                 frameCount = 0;
             }
         }
     }
+
 }
